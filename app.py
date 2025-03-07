@@ -109,16 +109,17 @@ def plot_monthly_spending_by_category_section(
 ):
     """
     Renders the "Monthly Spending by Category" section with optional moving average.
-
     Args:
         transaction_data (pd.DataFrame): The transaction data.
         categories (list): List of unique categories.
         header_func (function): Function to set headers.
     """
+    
     header_func("Monthly Spending by Category")
-
+    # Ensure "Rent" is in the categories list
+    default_values = ["Rent"] if "Rent" in categories else []
     # Allow users to exclude certain categories
-    skip_categories = st.multiselect("Exclude categories", categories, default=["Rent"])
+    skip_categories = st.multiselect("Exclude categories", categories, default=default_values)
 
     # Checkbox to enable moving average
     enable_ma = st.checkbox("Add moving average to each category")
@@ -156,13 +157,17 @@ def plot_monthly_spending_section(transaction_data, categories, header_func):
     """
     header_func("Monthly Spending")
 
+    # Ensure "Rent" is in the categories list
+    default_values = ["Rent"] if "Rent" in categories else []
     # Allow users to exclude certain categories
     skip_categories = st.multiselect(
         "Exclude categories from spending",
         categories,
-        default=["Rent"],
+        default=default_values,
         key="spending_exclude",
     )
+    
+    
 
     fig = plot_total_spending_per_month(
         transaction_data,
