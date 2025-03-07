@@ -67,8 +67,14 @@ def get_transaction_data_df() -> pd.DataFrame:
     return df
 
 
-def clean_amount(x: str) -> float:
+#def clean_amount(x: str) -> float:
     # change e.g., $3,200.00 to 3200.00 in Amount column
+#    return float(x.replace("$", "").replace(",", ""))
+
+def clean_amount(x):
+    # Check if the string is empty or contains only spaces
+    if x.strip() == '':
+        return 0.0  # Return a default value, e.g., 0.0
     return float(x.replace("$", "").replace(",", ""))
 
 
