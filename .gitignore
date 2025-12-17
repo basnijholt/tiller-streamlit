@@ -89,3 +89,6 @@ ENV/
 .ropeproject
 
 .env
+
+# Google service account credentials
+tillerhq-*.json
