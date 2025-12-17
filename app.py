@@ -118,7 +118,7 @@ def plot_monthly_spending_by_category_section(
     header_func("Monthly Spending by Category")
 
     # Allow users to exclude certain categories
-    skip_categories = st.multiselect("Exclude categories", categories, default=["Rent"])
+    skip_categories = st.multiselect("Exclude categories", categories, default=[])
 
     # Checkbox to enable moving average
     enable_ma = st.checkbox("Add moving average to each category")
@@ -139,7 +139,9 @@ def plot_monthly_spending_by_category_section(
 
     # Pass the moving average parameter to the plotting function
     fig = plot_categories_per_month(
-        transaction_data, skip_categories=skip_categories, n_months_ma=n_months_ma
+        transaction_data,
+        skip_categories=skip_categories + ["Taxes"],
+        n_months_ma=n_months_ma,
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -160,13 +162,13 @@ def plot_monthly_spending_section(transaction_data, categories, header_func):
     skip_categories = st.multiselect(
         "Exclude categories from spending",
         categories,
-        default=["Rent"],
+        default=[],
         key="spending_exclude",
     )
 
     fig = plot_total_spending_per_month(
         transaction_data,
-        skip_categories=skip_categories,
+        skip_categories=skip_categories + ["Taxes"],
         n_months_moving_avg=[3, 6, 12],
     )
     st.plotly_chart(fig, use_container_width=True)
