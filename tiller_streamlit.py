@@ -1,4 +1,3 @@
-import calendar
 import os
 from datetime import datetime
 
@@ -33,7 +32,7 @@ def sheet_as_df(range: str) -> pd.DataFrame:
     return pd.DataFrame(values[1:], columns=values[0])
 
 
-def get_categories() -> tuple[dict[str, str], dict[str, list[str]]]:
+def get_categories() -> tuple[dict[str, str], dict[str, list[str]], dict[str, str]]:
     df = sheet_as_df("Categories")
     category_to_group: dict[str, str] = {}
     group_to_category: dict[str, list[str]] = {}
@@ -483,7 +482,7 @@ def plot_monthly_total_and_account_balances(
 
     # Create a 'Label' column combining Account name and formatted Balance
     df["Label"] = df.apply(
-        lambda row: f"{row['Account']}: ${row['Balance']/1000:,.0f}k", axis=1
+        lambda row: f"{row['Account']}: ${row['Balance'] / 1000:,.0f}k", axis=1
     )
 
     # Plot using Plotly Express
