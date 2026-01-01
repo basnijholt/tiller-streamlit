@@ -4,24 +4,22 @@ services:
     container_name: tiller-streamlit
     restart: unless-stopped
     ports:
-      - "8501:8501"
+    - "8501:8501"
     volumes:
-      - .:/app
+    - .:/app
     environment:
-      - SERVICE_ACCOUNT_FILE=${SERVICE_ACCOUNT_FILE}
-      - SCOPES=${SCOPES}
-      - SPREADSHEET_ID=${SPREADSHEET_ID}
+    - SERVICE_ACCOUNT_FILE=${SERVICE_ACCOUNT_FILE}
+    - SCOPES=${SCOPES}
+    - SPREADSHEET_ID=${SPREADSHEET_ID}
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.tiller.rule=Host(`tiller.${DOMAIN}`)
-      - traefik.http.routers.tiller.entrypoints=websecure
-      - traefik.http.routers.tiller-local.rule=Host(`tiller.local`)
-      - traefik.http.routers.tiller-local.entrypoints=web
-      - traefik.http.services.tiller.loadbalancer.server.port=8501
-      - kuma.tiller.http.name=Tiller
-      - kuma.tiller.http.url=https://tiller.${DOMAIN}
+    - traefik.enable=true
+    - traefik.http.routers.tiller.rule=Host(`tiller.${DOMAIN}`)
+    - traefik.http.routers.tiller.entrypoints=websecure
+    - traefik.http.routers.tiller-local.rule=Host(`tiller.local`)
+    - traefik.http.routers.tiller-local.entrypoints=web
+    - traefik.http.services.tiller.loadbalancer.server.port=8501
     networks:
-      - mynetwork
+    - mynetwork
 
 networks:
   mynetwork:
