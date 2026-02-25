@@ -13,11 +13,36 @@ services:
     - SPREADSHEET_ID=${SPREADSHEET_ID}
     labels:
     - traefik.enable=true
-    - traefik.http.routers.tiller.rule=Host(`tiller.${DOMAIN}`)
-    - traefik.http.routers.tiller.entrypoints=websecure
-    - traefik.http.routers.tiller-local.rule=Host(`tiller.local`)
-    - traefik.http.routers.tiller-local.entrypoints=web
-    - traefik.http.services.tiller.loadbalancer.server.port=8501
+    - traefik.http.routers.money.rule=Host(`money.${DOMAIN}`)
+    - traefik.http.routers.money.entrypoints=websecure
+    - traefik.http.routers.money.priority=50
+    - traefik.http.routers.money-local.rule=Host(`money.local`)
+    - traefik.http.routers.money-local.entrypoints=web
+    - traefik.http.routers.money-local.priority=50
+    - traefik.http.services.money.loadbalancer.server.port=8501
+    networks:
+    - mynetwork
+
+  api:
+    build: .
+    container_name: tiller-api
+    restart: unless-stopped
+    volumes:
+    - .:/app
+    environment:
+    - SERVICE_ACCOUNT_FILE=${SERVICE_ACCOUNT_FILE}
+    - SCOPES=${SCOPES}
+    - SPREADSHEET_ID=${SPREADSHEET_ID}
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8502"]
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.money-api.rule=Host(`money.${DOMAIN}`) && PathPrefix(`/api`)
+    - traefik.http.routers.money-api.entrypoints=websecure
+    - traefik.http.routers.money-api.priority=100
+    - traefik.http.routers.money-api-local.rule=Host(`money.local`) && PathPrefix(`/api`)
+    - traefik.http.routers.money-api-local.entrypoints=web
+    - traefik.http.routers.money-api-local.priority=100
+    - traefik.http.services.money-api.loadbalancer.server.port=8502
     networks:
     - mynetwork
 

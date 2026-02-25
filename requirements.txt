@@ -13,3 +13,5 @@ hvplot
 bokeh==2.4.3
 param<2
 altair
+fastapi
+uvicorn
