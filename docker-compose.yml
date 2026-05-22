@@ -4,7 +4,7 @@ services:
     container_name: tiller-streamlit
     restart: unless-stopped
     ports:
-    - "8501:8501"
+    - "127.0.0.1:8501:8501"
     volumes:
     - .:/app
     environment:
@@ -14,6 +14,7 @@ services:
     labels:
     - traefik.enable=true
     - traefik.http.routers.money.rule=Host(`money.${DOMAIN}`)
+    - traefik.http.routers.money.middlewares=local-ips-only@file
     - traefik.http.routers.money.entrypoints=websecure
     - traefik.http.routers.money.priority=50
     - traefik.http.routers.money-local.rule=Host(`money.local`)
@@ -37,6 +38,7 @@ services:
     labels:
     - traefik.enable=true
     - traefik.http.routers.money-api.rule=Host(`money.${DOMAIN}`) && PathPrefix(`/api`)
+    - traefik.http.routers.money-api.middlewares=local-ips-only@file
     - traefik.http.routers.money-api.entrypoints=websecure
     - traefik.http.routers.money-api.priority=100
     - traefik.http.routers.money-api-local.rule=Host(`money.local`) && PathPrefix(`/api`)
