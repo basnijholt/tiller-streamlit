@@ -37,6 +37,22 @@ The Balance History reader expects the standard Tiller shape, including `Date`, 
 
 ## API
 
+### API Index
+
+```http
+GET /api
+```
+
+Returns a compact map of the high-level concepts exposed by the API.
+
+### Dashboard
+
+```http
+GET /api/dashboard?months=6&top_categories=8&transaction_limit=10
+```
+
+Returns the main dashboard concepts in one response: current net worth, account balances, monthly spending with 3/6/12-month moving averages, monthly income, top spending categories, compact net worth history, and recent transactions.
+
 ### Summary
 
 ```http
@@ -45,19 +61,69 @@ GET /api/summary?months=6&transaction_limit=10
 
 Returns current net worth, current account balances, recent monthly spending, recent monthly income, compact net worth history, and recent transactions.
 
-### Spending
+### Monthly Spending
+
+```http
+GET /api/monthly-spending?months=24
+GET /api/monthly-spending?months=24&moving_average=3&moving_average=6
+GET /api/monthly-spending?months=24&exclude_category=Taxes&exclude_category=Shopping
+```
+
+Returns monthly total spending with optional moving averages. By default this excludes `Taxes`, matching the Streamlit monthly spending charts.
+
+### Spending By Category
 
 ```http
 GET /api/spending?months=12
 GET /api/spending?months=12&category=Groceries
+GET /api/spending-by-category?months=12&moving_average_months=3
 ```
 
-Returns monthly spending grouped by category. Spending excludes transfers, investment categories, and credit card payments.
+Returns monthly spending grouped by category. `/api/spending` is the older compact map response. `/api/spending-by-category` returns a richer month list with totals, category groups, and optional per-category moving averages.
+
+Spending excludes transfers, investment categories, and credit card payments. The newer high-level spending endpoints also exclude `Taxes` by default unless you pass an explicit `exclude_category` list.
+
+### Comparative Spending
+
+```http
+GET /api/comparative-spending?previous_months=3
+```
+
+Returns cumulative day-by-day spending series for the current month and previous months, matching the comparative spending chart concept.
+
+### Spending Composition
+
+```http
+GET /api/spending-composition
+GET /api/spending-composition?year=2026&month=5
+GET /api/spending-composition?year=2026&month=5&group_by=group
+```
+
+Returns category or group spending shares for a selected month/year. This is the data equivalent of the total spending pie/sunburst section.
+
+### Category Histogram
+
+```http
+GET /api/category-histogram?category=Shopping&bins=30
+GET /api/category-histogram?category=Groceries&start=2026-01-01&end=2026-05-24
+```
+
+Returns transaction amount summary statistics and histogram bins for one category.
+
+### Monthly Income
+
+```http
+GET /api/monthly-income?months=24
+GET /api/monthly-income?months=24&category=Paycheck
+```
+
+Returns monthly income totals for the selected income category.
 
 ### Transactions
 
 ```http
 GET /api/transactions?months=1&limit=100
+GET /api/transactions?months=1&account=Checking&limit=100&offset=100
 GET /api/recent-transactions?limit=25&start=2026-01-01&end=2026-05-24
 ```
 
@@ -85,6 +151,15 @@ GET /api/balances
 ```
 
 Returns latest account balances and total net worth.
+
+### Account Balance History
+
+```http
+GET /api/account-balance-history?months=24
+GET /api/account-balance-history?months=24&exclude_account=Checking
+```
+
+Returns monthly total and per-account balances for the monthly account balance chart.
 
 ### Balance History
 
