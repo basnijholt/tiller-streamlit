@@ -244,7 +244,9 @@ def plot_total_spending_pie_chart_section(transaction_data, header_func):
     )
     month = st.selectbox("Select a month", [None] + list(range(1, 13)))
     with_group = st.checkbox("Group by category", value=False, key="pie_group")
-    fig = plot_categories(transaction_data, month, year, with_group=with_group)
+    fig = plot_categories(
+        transaction_data, month, year, with_group=with_group, skip_categories=["Taxes"]
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 

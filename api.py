@@ -484,6 +484,12 @@ def spending_by_category(
 
 @app.get("/api/spending-composition")
 def spending_composition(
+    months: int | None = Query(
+        None,
+        ge=1,
+        le=240,
+        description="Recent months to include before optional calendar filters",
+    ),
     year: int | None = Query(None, ge=1900, le=3000, description="Calendar year"),
     month: int | None = Query(None, ge=1, le=12, description="Calendar month"),
     group_by: str = Query(
@@ -493,14 +499,16 @@ def spending_composition(
     ),
     exclude_category: list[str] | None = Query(
         None,
-        description="Repeatable categories to exclude. Omit for all spending categories.",
+        description="Repeatable categories to exclude. Defaults to Taxes.",
     ),
 ):
     """Spending composition for a month/year as category or group shares."""
     transaction_data = get_transaction_data_df()
     spending = _spending_df(
-        transaction_data, exclude_category=exclude_category if exclude_category else []
+        transaction_data, exclude_category=_excluded_categories(exclude_category)
     )
+    if months is not None:
+        spending = _recent_month_filter(spending, months)
     if year is not None:
         spending = spending[spending["Date"].dt.year == year]
     if month is not None:
@@ -516,9 +524,11 @@ def spending_composition(
     total = grouped["spending"].sum()
 
     return {
+        "months": months,
         "year": year,
         "month": month,
         "group_by": group_by,
+        "excluded_categories": _excluded_categories(exclude_category),
         "total_spending": _money(total),
         "items": [
             {

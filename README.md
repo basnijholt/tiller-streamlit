@@ -95,11 +95,12 @@ Returns cumulative day-by-day spending series for the current month and previous
 
 ```http
 GET /api/spending-composition
+GET /api/spending-composition?months=12
 GET /api/spending-composition?year=2026&month=5
 GET /api/spending-composition?year=2026&month=5&group_by=group
 ```
 
-Returns category or group spending shares for a selected month/year. This is the data equivalent of the total spending pie/sunburst section.
+Returns category or group spending shares for a selected month/year or the most recent `months`. This is the data equivalent of the total spending pie/sunburst section. It excludes `Taxes` by default.
 
 ### Category Histogram
 

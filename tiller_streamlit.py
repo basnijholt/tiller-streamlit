@@ -144,8 +144,11 @@ def plot_categories(
     month: int | None = None,
     year: int | None = None,
     with_group: bool = False,
+    skip_categories: list[str] | None = None,
 ) -> plotly.graph_objs.Figure:
     df = _to_spending(transaction_data)
+    if skip_categories:
+        df = df[~df["Category"].isin(skip_categories)]
     if month is not None:
         df = df[df["Date"].dt.month == month]
     if year is not None:
