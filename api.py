@@ -135,7 +135,9 @@ def _transaction_records(
     df: pd.DataFrame, limit: int, *, offset: int = 0, lowercase: bool = False
 ) -> list[dict]:
     df = df.sort_values("Date", ascending=False).iloc[offset : offset + limit]
-    records = df[["Date", "Description", "Category", "Amount", "Account", "Group"]].copy()
+    records = df[
+        ["Date", "Description", "Category", "Amount", "Account", "Account #", "Group"]
+    ].copy()
     records["Date"] = records["Date"].dt.strftime("%Y-%m-%d")
     records["Amount"] = records["Amount"].round(2)
     if lowercase:
@@ -146,6 +148,7 @@ def _transaction_records(
                 "Category": "category",
                 "Amount": "amount",
                 "Account": "account",
+                "Account #": "account_number",
                 "Group": "group",
             }
         )
