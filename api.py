@@ -155,9 +155,26 @@ def _transaction_records(
     return records.to_dict(orient="records")
 
 
+def _account_label(row) -> str:
+    """Disambiguate accounts that share a display name.
+
+    Bas has three Wells Fargo checking accounts and two carry the identical
+    display name, so keying anything on ``Account`` alone silently merges
+    them.  Append the masked account number whenever the sheet has one.
+    """
+    name = row["Account"]
+    number = row.get("Account #")
+    if number and str(number).strip() and str(number).strip() not in str(name):
+        return f"{name} ({str(number).strip()})"
+    return name
+
+
 def _balance_history_records(df: pd.DataFrame) -> list[dict]:
     df = df.sort_values(["Date", "Account"])
-    records = df[["Date", "Account", "Balance", "Class"]].copy()
+    columns = ["Date", "Account", "Balance", "Class"]
+    if "Account #" in df.columns:
+        columns.append("Account #")
+    records = df[columns].copy()
     records["Date"] = records["Date"].dt.strftime("%Y-%m-%d")
     records["Balance"] = records["Balance"].round(2)
     records = records.rename(
@@ -166,6 +183,7 @@ def _balance_history_records(df: pd.DataFrame) -> list[dict]:
             "Account": "account",
             "Balance": "balance",
             "Class": "class",
+            "Account #": "account_number",
         }
     )
     return records.to_dict(orient="records")
@@ -208,9 +226,13 @@ def summary(
     net_worth = bal[bal["Date"] == latest_date]["Balance"].sum()
 
     # Account balances
-    latest_bal = bal[bal["Date"] == latest_date][["Account", "Balance"]]
+    summary_columns = ["Account", "Balance"]
+    if "Account #" in bal.columns:
+        summary_columns.append("Account #")
+    latest_bal = bal[bal["Date"] == latest_date][summary_columns]
     accounts = {
-        row["Account"]: round(row["Balance"], 2) for _, row in latest_bal.iterrows()
+        _account_label(row): round(row["Balance"], 2)
+        for _, row in latest_bal.iterrows()
     }
 
     # Monthly spending (excluding transfers, investments, taxes)
@@ -273,7 +295,8 @@ def dashboard(
 
     accounts = [
         {
-            "account": row["Account"],
+            "account": _account_label(row),
+            "account_number": row.get("Account #"),
             "balance": _money(row["Balance"]),
             "class": row["Class"],
         }
@@ -705,9 +728,12 @@ def account_balance_history(
     balance_data["month"] = balance_data["Date"].dt.to_period("M")
     balance_data = _recent_month_filter(balance_data, months)
 
+    group_keys = ["month", "Account", "Class"]
+    if "Account #" in balance_data.columns:
+        group_keys.append("Account #")
     monthly_accounts = (
         balance_data.sort_values("Date")
-        .groupby(["month", "Account", "Class"])["Balance"]
+        .groupby(group_keys)["Balance"]
         .first()
         .reset_index(name="balance")
         .sort_values(["month", "balance"], ascending=[True, False])
@@ -721,7 +747,8 @@ def account_balance_history(
                 "total_balance": _money(month_rows["balance"].sum()),
                 "accounts": [
                     {
-                        "account": row["Account"],
+                        "account": _account_label(row),
+                        "account_number": row.get("Account #"),
                         "class": row["Class"],
                         "balance": _money(row["balance"]),
                     }
@@ -785,13 +812,17 @@ def balances():
     """Current account balances and net worth."""
     bal = resampled_balance_history(get_balance_history())
     latest_date = bal["Date"].max()
-    latest = bal[bal["Date"] == latest_date][["Account", "Balance", "Class"]]
+    balance_columns = ["Account", "Balance", "Class"]
+    if "Account #" in bal.columns:
+        balance_columns.append("Account #")
+    latest = bal[bal["Date"] == latest_date][balance_columns]
 
     accounts = []
     for _, row in latest.iterrows():
         accounts.append(
             {
-                "account": row["Account"],
+                "account": _account_label(row),
+                "account_number": row.get("Account #"),
                 "balance": round(row["Balance"], 2),
                 "class": row["Class"],
             }
@@ -817,7 +848,10 @@ def balance_history(
     bal = _filter_date_range(bal, start, end)
 
     if account:
-        bal = bal[bal["Account"] == account]
+        matches = bal["Account"] == account
+        if "Account #" in bal.columns:
+            matches = matches | (bal["Account #"] == account)
+        bal = bal[matches]
 
     return _balance_history_records(bal)
 
